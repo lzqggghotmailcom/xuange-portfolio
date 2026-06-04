@@ -174,6 +174,7 @@
             nav .nav-links{display:none}
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
 </head>
 <body>
@@ -226,7 +227,7 @@
         <h2 class="section-title">首支单曲《后来风吹过》</h2>
 
         <div class="mv-player">
-            <video src="./assets/videos/F01.mp4" controls playsinline poster=""></video>
+            <video id="mv-main" src="./assets/videos/hls/f01/master.m3u8" controls playsinline></video>
         </div>
 
         <div class="mv-info">
@@ -250,7 +251,7 @@
         <p class="mv-info mv-subtitle" style="text-align:center;font-size:.9rem;margin-bottom:24px;">《请删除我的想念》&nbsp;·&nbsp;The 9000th Wake-Up&nbsp;·&nbsp;第9000次唤醒</p>
 
         <div class="mv-player">
-            <video src="./assets/videos/MV.2.2.mp4" controls playsinline poster=""></video>
+            <video id="mv-second" src="./assets/videos/hls/mv22/master.m3u8" controls playsinline></video>
         </div>
 
         <div class="mv-info">
@@ -547,9 +548,26 @@
             document.getElementById('intro-overlay').style.opacity='0';
             setTimeout(()=>document.getElementById('intro-overlay').style.display='none',1000);
             document.getElementById('navbar').classList.add('visible');
-            initAudio();boomSound();initRainCanvas();initPlayer();
+            initAudio();boomSound();initRainCanvas();initPlayer();initHLS();
         }
         document.querySelectorAll('a,button,.masonry-item,.mood-tag,.poster-item').forEach(el=>{el.addEventListener('mouseenter',clickSound)});
+
+        /* =====================================================================
+         *  HLS 流式视频初始化
+         * ===================================================================== */
+        function initHLS(){
+            document.querySelectorAll('video[id]').forEach(v=>{
+                const src=v.getAttribute('src');
+                if(src&&src.endsWith('.m3u8')&&Hls.isSupported()){
+                    const hls=new Hls({enableWorker:false});
+                    hls.loadSource(src);
+                    hls.attachMedia(v);
+                    hls.on(Hls.Events.MANIFEST_PARSED,()=>{v.play().catch(()=>{})});
+                }else if(v.canPlayType('application/vnd.apple.mpegurl')){
+                    v.src=src;
+                }
+            });
+        }
 
         /* =====================================================================
          *  雨丝电影感背景引擎
