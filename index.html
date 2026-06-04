@@ -391,12 +391,13 @@
 
     <!-- 极简工业感音频播放器 -->
     <div class="industrial-player" id="audio-player">
+        <audio id="bgm" src="./assets/laterfeng.mp3" preload="auto"></audio>
         <div class="player-wrapper">
             <div class="track-meta">
                 <span class="track-title">后来风吹过</span>
                 <span class="track-sub">1st Single / Track 01</span>
             </div>
-            <div class="waveform-track" id="waveform"></div>
+            <div class="waveform-track" id="waveform" onclick="seekAudio(event)"></div>
             <div class="controls">
                 <button id="playBtn" class="minimal-btn" onclick="togglePlayer()">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
@@ -562,7 +563,6 @@
                     const hls=new Hls({enableWorker:false});
                     hls.loadSource(src);
                     hls.attachMedia(v);
-                    hls.on(Hls.Events.MANIFEST_PARSED,()=>{v.play().catch(()=>{})});
                 }else if(v.canPlayType('application/vnd.apple.mpegurl')){
                     v.src=src;
                 }
@@ -611,33 +611,49 @@
         /* =====================================================================
          *  极简工业感音频播放器
          * ===================================================================== */
-        let playerPlaying=false,waveInterval=null;
+        let playerPlaying=false,waveBars=[],audioEl=null;
         function initPlayer(){
+            audioEl=document.getElementById('bgm');
             const wf=document.getElementById('waveform');
             for(let i=0;i<80;i++){
                 const bar=document.createElement('div');
                 bar.className='wave-bar';
                 bar.style.height=(Math.random()*60+20)+'%';
                 wf.appendChild(bar);
+                waveBars.push(bar);
             }
+            audioEl.addEventListener('timeupdate',updateWave);
+            audioEl.addEventListener('ended',()=>{togglePlayer();});
         }
         function togglePlayer(){
             playerPlaying=!playerPlaying;
             const btn=document.getElementById('playBtn');
-            const bars=document.querySelectorAll('.wave-bar');
             const lyrics=document.getElementById('lyrics-display');
             if(playerPlaying){
+                audioEl.play();
                 btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>';
                 lyrics.classList.add('show');
-                bars.forEach((b,i)=>{setTimeout(()=>{if(playerPlaying){b.classList.add('active');b.style.height=(Math.random()*60+20)+'%'}},i*30)});
-                waveInterval=setInterval(()=>{if(!playerPlaying){clearInterval(waveInterval);return};const bs=document.querySelectorAll('.wave-bar.active');bs.forEach(b=>{b.style.height=(Math.random()*60+20)+'%'})},300);
             }else{
+                audioEl.pause();
                 btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
                 lyrics.classList.remove('show');
-                clearInterval(waveInterval);
-                bars.forEach(b=>{b.classList.remove('active')});
             }
             clickSound();
+        }
+        function updateWave(){
+            if(!audioEl||!audioEl.duration)return;
+            const pct=audioEl.currentTime/audioEl.duration;
+            const activeCount=Math.floor(pct*waveBars.length);
+            waveBars.forEach((b,i)=>{
+                if(i<=activeCount){b.classList.add('active');if(Math.random()>.7)b.style.height=(Math.random()*60+20)+'%'}
+                else b.classList.remove('active');
+            });
+        }
+        function seekAudio(e){
+            if(!audioEl||!audioEl.duration)return;
+            const rect=e.target.getBoundingClientRect();
+            const pct=(e.clientX-rect.left)/rect.width;
+            audioEl.currentTime=pct*audioEl.duration;
         }
 
         /* =====================================================================
