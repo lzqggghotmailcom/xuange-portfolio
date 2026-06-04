@@ -17,8 +17,11 @@
         html::-webkit-scrollbar{display:none}
         body{background:var(--bg);color:var(--text);font-family:'Noto Sans SC','Space Grotesk','Montserrat',sans-serif;line-height:1.8;overflow-x:hidden;font-weight:300}
 
-        /* 3D 背景 */
-        #bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.30}
+        /* 3D 背景 — 替换为雨丝电影感背景 */
+        #rain-canvas{position:fixed;inset:0;z-index:1;pointer-events:none}
+        .ambient-glow{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(circle at 70% 30%,rgba(212,175,55,0.04) 0%,transparent 40%);animation:breathe 8s ease-in-out infinite alternate}
+        @keyframes breathe{from{opacity:.5;transform:scale(1)}to{opacity:1;transform:scale(1.06)}}
+        .film-grain{position:fixed;inset:0;z-index:3;pointer-events:none;background-image:url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="n"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23n)"/%3E%3C/svg%3E');opacity:.035;mix-blend-mode:overlay}
 
         /* 入场 */
         #intro-overlay{position:fixed;inset:0;background:#050508;z-index:9999;display:flex;flex-direction:column;justify-content:center;align-items:center;transition:opacity 1s cubic-bezier(.25,1,.5,1)}
@@ -143,7 +146,21 @@
         .lb-prev{left:-54px}.lb-next{right:-54px}
         .lb-counter{position:absolute;bottom:-32px;left:50%;transform:translateX(-50%);color:var(--muted);font-size:.7rem;letter-spacing:.2em}
 
-        /* === 响应式 === */
+        /* === 极简工业感音频播放器 === */
+        .industrial-player{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);width:80%;max-width:800px;z-index:200;display:flex;flex-direction:column;align-items:center;font-family:'Noto Serif SC',serif}
+        .player-wrapper{display:flex;align-items:center;justify-content:space-between;width:100%;gap:28px}
+        .track-meta{display:flex;flex-direction:column;align-items:flex-start;min-width:120px}
+        .track-title{font-size:15px;font-weight:600;color:var(--text);letter-spacing:2px}
+        .track-sub{font-family:'Space Grotesk',sans-serif;font-size:9px;color:#5A6775;margin-top:4px;letter-spacing:1px;text-transform:uppercase}
+        .waveform-track{flex:1;height:30px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+        .wave-bar{width:1px;background-color:#2D353F;transition:height .2s,background-color .3s}
+        .wave-bar:hover{height:100%!important;background-color:#7F8C9D}
+        .wave-bar.active{background-color:#D4AF37;box-shadow:0 0 5px rgba(212,175,55,.4)}
+        .minimal-btn{background:none;border:1px solid rgba(255,255,255,.15);color:var(--text);cursor:pointer;width:34px;height:34px;display:flex;align-items:center;justify-content:center;transition:all .3s;border-radius:2px}
+        .minimal-btn:hover{border-color:var(--gold);color:var(--gold)}
+        .cinematic-lyrics{margin-top:22px;font-size:13px;color:rgba(255,255,255,.35);letter-spacing:4px;opacity:0;transition:opacity 2s ease-in-out}
+        .cinematic-lyrics.show{opacity:1}
+        @media(max-width:768px){.industrial-player{width:92%;bottom:24px}.track-meta{min-width:80px}.track-title{font-size:13px}}
         @media(max-width:900px){
             section{padding:70px 20px}
             #hero .hero-name{font-size:2.4rem;letter-spacing:.18em}
@@ -157,7 +174,7 @@
             nav .nav-links{display:none}
         }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
 </head>
 <body>
 
@@ -168,7 +185,10 @@
         <div class="intro-hint">都市夜色系情绪流行女歌手</div>
     </div>
 
-    <canvas id="bg-canvas"></canvas>
+    <!-- 雨丝电影感背景：4层结构 -->
+    <div class="ambient-glow"></div>
+    <canvas id="rain-canvas"></canvas>
+    <div class="film-grain"></div>
 
     <!-- 导航 -->
     <nav id="navbar">
@@ -368,6 +388,23 @@
         </div>
     </section>
 
+    <!-- 极简工业感音频播放器 -->
+    <div class="industrial-player" id="audio-player">
+        <div class="player-wrapper">
+            <div class="track-meta">
+                <span class="track-title">后来风吹过</span>
+                <span class="track-sub">1st Single / Track 01</span>
+            </div>
+            <div class="waveform-track" id="waveform"></div>
+            <div class="controls">
+                <button id="playBtn" class="minimal-btn" onclick="togglePlayer()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                </button>
+            </div>
+        </div>
+        <div class="cinematic-lyrics" id="lyrics-display">把说不出口的名字，轻轻唱给夜色。</div>
+    </div>
+
     <footer><p>许安歌 © 2026 · 夜帧影像 Nightframe Studio · dxshouxi@gmail.com</p></footer>
 
     <!-- 灯箱 -->
@@ -510,35 +547,79 @@
             document.getElementById('intro-overlay').style.opacity='0';
             setTimeout(()=>document.getElementById('intro-overlay').style.display='none',1000);
             document.getElementById('navbar').classList.add('visible');
-            initAudio();boomSound();initWebGL();
+            initAudio();boomSound();initRainCanvas();initPlayer();
         }
         document.querySelectorAll('a,button,.masonry-item,.mood-tag,.poster-item').forEach(el=>{el.addEventListener('mouseenter',clickSound)});
 
         /* =====================================================================
-         *  Three.js 3D
+         *  雨丝电影感背景引擎
          * ===================================================================== */
-        let group,core;
-        function initWebGL(){
-            const canvas=document.getElementById('bg-canvas');
-            const scene=new THREE.Scene();
-            const camera=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,.1,100);camera.position.z=5;
-            const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
-            renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-            group=new THREE.Group();scene.add(group);
-            const geo=new THREE.TorusKnotGeometry(.7,.22,128,12);
-            const mat=new THREE.MeshStandardMaterial({color:0x1a1a20,metalness:.9,roughness:.15});
-            core=new THREE.Mesh(geo,mat);group.add(core);
-            const pGeo=new THREE.BufferGeometry();
-            const arr=new Float32Array(400*3);for(let i=0;i<400*3;i++)arr[i]=(Math.random()-.5)*5;
-            pGeo.setAttribute('position',new THREE.BufferAttribute(arr,3));
-            const pts=new THREE.Points(pGeo,new THREE.PointsMaterial({size:.02,color:0xc8a878,transparent:true,opacity:.25}));
-            group.add(pts);
-            scene.add(new THREE.AmbientLight(0xffffff,.06));
-            const spot=new THREE.SpotLight(0xc8a878,3);spot.position.set(2,4,3);spot.angle=Math.PI/5;spot.penumbra=.9;scene.add(spot);
-            let mx=0,my=0,cx=0,cy=0;
-            window.addEventListener('mousemove',e=>{mx=(e.clientX/innerWidth-.5)*.3;my=(e.clientY/innerHeight-.5)*.3});
-            window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
-            (function anim(){requestAnimationFrame(anim);core.rotation.y+=.002;pts.rotation.y-=.0008;cx+=(mx-cx)*.05;cy+=(my-cy)*.05;group.rotation.y=cx;group.rotation.x=cy;renderer.render(scene,camera)})();
+        function initRainCanvas(){
+            const canvas=document.getElementById('rain-canvas');
+            const ctx=canvas.getContext('2d');
+            let w,h,drops=[];
+            function resize(){w=canvas.width=innerWidth;h=canvas.height=innerHeight}
+            resize();window.addEventListener('resize',resize);
+
+            for(let i=0;i<300;i++){
+                drops.push({x:Math.random()*w*1.5-w*.5,y:Math.random()*h,len:Math.random()*20+10,spd:Math.random()*2+1,op:Math.random()*.1+.05});
+            }
+
+            function draw(){
+                ctx.clearRect(0,0,w,h);
+                ctx.lineWidth=1;ctx.lineCap='round';
+                drops.forEach(d=>{
+                    ctx.strokeStyle=`rgba(127,140,157,${d.op})`;
+                    ctx.beginPath();
+                    ctx.moveTo(d.x,d.y);
+                    ctx.lineTo(d.x-d.len*.25,d.y+d.len);
+                    ctx.stroke();
+                    d.x-=d.spd*.25;d.y+=d.spd;
+                    if(d.y>h){d.y=-20;d.x=Math.random()*w*1.5-w*.5}
+                });
+                requestAnimationFrame(draw);
+            }
+            draw();
+
+            // 鼠标视差
+            document.addEventListener('mousemove',e=>{
+                const mx=e.clientX/innerWidth-.5;
+                const my=e.clientY/innerHeight-.5;
+                canvas.style.transform=`translate(${mx*-8}px,${my*-8}px)`;
+                document.querySelector('.ambient-glow').style.transform=`translate(${mx*5}px,${my*5}px)`;
+            });
+        }
+
+        /* =====================================================================
+         *  极简工业感音频播放器
+         * ===================================================================== */
+        let playerPlaying=false,waveInterval=null;
+        function initPlayer(){
+            const wf=document.getElementById('waveform');
+            for(let i=0;i<80;i++){
+                const bar=document.createElement('div');
+                bar.className='wave-bar';
+                bar.style.height=(Math.random()*60+20)+'%';
+                wf.appendChild(bar);
+            }
+        }
+        function togglePlayer(){
+            playerPlaying=!playerPlaying;
+            const btn=document.getElementById('playBtn');
+            const bars=document.querySelectorAll('.wave-bar');
+            const lyrics=document.getElementById('lyrics-display');
+            if(playerPlaying){
+                btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>';
+                lyrics.classList.add('show');
+                bars.forEach((b,i)=>{setTimeout(()=>{if(playerPlaying){b.classList.add('active');b.style.height=(Math.random()*60+20)+'%'}},i*30)});
+                waveInterval=setInterval(()=>{if(!playerPlaying){clearInterval(waveInterval);return};const bs=document.querySelectorAll('.wave-bar.active');bs.forEach(b=>{b.style.height=(Math.random()*60+20)+'%'})},300);
+            }else{
+                btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
+                lyrics.classList.remove('show');
+                clearInterval(waveInterval);
+                bars.forEach(b=>{b.classList.remove('active')});
+            }
+            clickSound();
         }
 
         /* =====================================================================
