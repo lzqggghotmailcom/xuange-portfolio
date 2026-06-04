@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>许安歌｜都市夜色系情绪流行女歌手</title>
+    <meta name="description" content="许安歌是一位都市夜色系虚拟女歌手，首支单曲《后来风吹过》以雨夜旧街、玻璃倒影、台灯与黎明释怀为视觉核心。">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400;600&family=Space+Grotesk:wght@300;500&family=Noto+Sans+SC:wght@200;300;400;700&family=Noto+Serif+SC:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:#0C0B10; --surface:#131118;
+            --gold:#C8A878; --gold-dim:rgba(200,168,120,0.10); --gold-border:rgba(200,168,120,0.16);
+            --text:#E8E0D4; --muted:#8A8278; --white05:rgba(255,255,255,0.04); --white08:rgba(255,255,255,0.07);
+        }
+        *{box-sizing:border-box;margin:0;padding:0}
+        html{scroll-behavior:smooth;scrollbar-width:none}
+        html::-webkit-scrollbar{display:none}
+        body{background:var(--bg);color:var(--text);font-family:'Noto Sans SC','Space Grotesk','Montserrat',sans-serif;line-height:1.8;overflow-x:hidden;font-weight:300}
+
+        /* 3D 背景 */
+        #bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.30}
+
+        /* 入场 */
+        #intro-overlay{position:fixed;inset:0;background:#050508;z-index:9999;display:flex;flex-direction:column;justify-content:center;align-items:center;transition:opacity 1s cubic-bezier(.25,1,.5,1)}
+        #intro-overlay .logo-text{font-size:2rem;letter-spacing:.3em;font-weight:200;margin-bottom:30px}
+        .intro-btn{background:transparent;border:1px solid rgba(200,168,120,.3);color:var(--gold);padding:16px 44px;font-size:.85rem;letter-spacing:.35em;cursor:pointer;text-transform:uppercase;transition:all .5s;font-family:inherit}
+        .intro-btn:hover{background:var(--gold);color:#08080C}
+        .intro-hint{margin-top:18px;color:var(--muted);font-size:.7rem;letter-spacing:.2em}
+
+        /* 导航 */
+        nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 40px;display:flex;justify-content:space-between;align-items:center;background:rgba(8,8,12,.85);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.04);opacity:0;transition:opacity .6s}
+        nav.visible{opacity:1}
+        nav .nav-brand{font-size:.9rem;letter-spacing:.25em;color:var(--gold);font-weight:300}
+        nav .nav-links{display:flex;gap:24px}
+        nav .nav-links a{color:var(--muted);text-decoration:none;font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;transition:color .3s}
+        nav .nav-links a:hover{color:var(--gold)}
+
+        /* 通用 */
+        section{position:relative;z-index:2;padding:110px 8%}
+        .section-tag{font-size:.65rem;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;margin-bottom:10px}
+        .section-title{font-size:1.8rem;font-weight:300;letter-spacing:.1em;margin-bottom:28px;color:var(--text)}
+        .section-body{max-width:680px;font-size:.95rem;color:var(--muted);line-height:2;font-weight:300}
+
+        /* Hero */
+        #hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding-top:60px}
+        #hero .hero-name{font-size:3.8rem;font-weight:200;letter-spacing:.3em;margin-bottom:12px}
+        #hero .hero-sub{font-size:1rem;letter-spacing:.35em;color:var(--gold);margin-bottom:18px;font-weight:300}
+        #hero .hero-line{font-size:1.05rem;color:var(--muted);font-weight:300;letter-spacing:.06em;margin-bottom:36px;font-family:'Noto Serif SC',serif}
+        #hero .hero-btns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+        #hero .hero-btns a{display:inline-block;padding:14px 30px;font-size:.72rem;letter-spacing:.2em;text-decoration:none;text-transform:uppercase;cursor:pointer;transition:all .4s;font-family:inherit}
+        .btn-primary{border:1px solid var(--gold);color:var(--gold)}
+        .btn-primary:hover{background:var(--gold);color:#08080C}
+        .btn-ghost{border:1px solid var(--white08);color:var(--muted)}
+        .btn-ghost:hover{border-color:rgba(255,255,255,.2);color:var(--text)}
+
+        /* === 长IP 宣传卡 === */
+        #promo-card{text-align:center;padding-top:20px}
+        #promo-card .promo-wrapper{max-width:960px;margin:0 auto;position:relative;border-radius:2px;overflow:hidden;box-shadow:0 30px 100px rgba(0,0,0,.6);border:1px solid var(--white08)}
+        #promo-card img{width:100%;display:block}
+        #promo-card .promo-label{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:var(--gold);padding:8px 24px;font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;white-space:nowrap}
+
+        /* === MV 公区 === */
+        .mv-player{width:100%;max-width:960px;margin:0 auto 24px;background:#000;border-radius:2px;overflow:hidden;box-shadow:0 30px 100px rgba(0,0,0,.6)}
+        .mv-player video{width:100%;display:block;aspect-ratio:16/9}
+        .mv-info{max-width:600px;margin:0 auto 40px;text-align:center}
+        .mv-info h3{font-size:1.4rem;font-weight:300;letter-spacing:.1em;margin-bottom:8px}
+        .mv-info .mv-subtitle{font-size:.8rem;color:var(--gold);letter-spacing:.15em;margin-bottom:16px}
+        .mv-info .mv-desc{font-size:.85rem;color:var(--muted);line-height:1.9}
+        .lyric-quote{display:inline-block;margin:20px 0;padding:18px 28px;border-left:1px solid var(--gold);color:var(--gold);font-size:.85rem;letter-spacing:.05em;line-height:2.1;font-family:'Noto Serif SC',serif;text-align:left}
+        .mv-story{max-width:680px;margin:30px auto 0;text-align:left}
+        .mv-story h4{font-size:.72rem;letter-spacing:.2em;color:var(--gold);margin-bottom:14px;text-transform:uppercase}
+        .mv-story p{font-size:.85rem;color:var(--muted);line-height:2;margin-bottom:10px}
+        .mv-story .story-block{border-left:1px solid var(--white08);padding-left:20px;margin:16px 0}
+        .mv-keywords{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+        .mv-keywords span{padding:6px 14px;border:1px solid var(--white08);font-size:.7rem;color:var(--muted);letter-spacing:.06em}
+
+        /* === 精选海报 === */
+        #posters{text-align:center}
+        .poster-row{display:flex;gap:18px;justify-content:center;align-items:flex-end;flex-wrap:wrap;max-width:1300px;margin:0 auto}
+        .poster-row .poster-item{border-radius:2px;overflow:hidden;border:1px solid var(--white08);transition:transform .3s,box-shadow .3s;cursor:pointer;background:var(--surface);flex:0 0 auto}
+        .poster-row .poster-item:hover{transform:translateY(-3px);box-shadow:0 16px 48px rgba(0,0,0,.5);border-color:var(--gold-border)}
+        .poster-row .poster-item img{height:380px;width:auto;display:block;max-width:100%;opacity:.88;transition:opacity .3s}
+        .poster-row .poster-item:hover img{opacity:1}
+        @media(max-width:900px){.poster-row{gap:12px}.poster-row .poster-item img{height:260px}}
+        @media(max-width:540px){.poster-row .poster-item img{height:200px}}
+
+        /* === About === */
+        #about{display:flex;gap:50px;align-items:flex-start;flex-wrap:wrap}
+        #about .about-text{flex:1;min-width:300px}
+        #about .about-card{flex:0 0 270px;background:var(--white05);border:1px solid var(--white08);padding:28px;border-radius:2px;backdrop-filter:blur(8px)}
+        .about-card .stat{margin-bottom:12px}
+        .about-card .stat-label{font-size:.62rem;letter-spacing:.2em;color:var(--muted);text-transform:uppercase}
+        .about-card .stat-value{font-size:.85rem;color:var(--text);margin-top:2px}
+
+        /* === 人物档案 === */
+        #character .profile-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-top:16px}
+        .profile-card{background:var(--white05);border:1px solid var(--white08);padding:26px;border-radius:2px;backdrop-filter:blur(8px)}
+        .profile-card h4{font-size:.72rem;letter-spacing:.2em;color:var(--gold);margin-bottom:14px;text-transform:uppercase}
+        .profile-card p,.profile-card li{font-size:.8rem;color:var(--muted);line-height:1.9;font-weight:300}
+        .profile-card ul{list-style:none;padding:0}
+        .profile-card li::before{content:'— ';color:var(--gold)}
+
+        /* === 视觉世界 === */
+        .mood-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+        .mood-tag{padding:7px 16px;border:1px solid var(--white08);border-radius:2px;font-size:.72rem;color:var(--muted);letter-spacing:.05em;transition:all .3s;backdrop-filter:blur(4px);background:var(--white05)}
+        .mood-tag:hover{border-color:var(--gold-border);color:var(--gold)}
+        .tone-standards{max-width:680px;margin-top:24px}
+        .tone-standards p{font-size:.8rem;color:var(--muted);line-height:2}
+
+        /* === 画廊瀑布流 === */
+        #gallery .masonry{column-count:3;column-gap:14px}
+        #gallery .masonry-item{break-inside:avoid;margin-bottom:14px;border-radius:2px;overflow:hidden;cursor:pointer;transition:transform .3s,box-shadow .3s;background:var(--surface);border:1px solid transparent}
+        #gallery .masonry-item:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(0,0,0,.5);border-color:var(--white08)}
+        #gallery .masonry-item img{width:100%;display:block;opacity:.88;transition:opacity .4s}
+        #gallery .masonry-item:hover img{opacity:1}
+
+        /* === Creator === */
+        #creator{text-align:center}
+        #creator .creator-card{display:inline-block;background:var(--white05);border:1px solid var(--white08);padding:36px 44px;border-radius:2px;backdrop-filter:blur(8px);max-width:500px;text-align:left}
+        #creator .creator-card h3{font-size:1.1rem;font-weight:400;letter-spacing:.1em;margin-bottom:6px}
+        #creator .creator-card .role{font-size:.68rem;color:var(--gold);letter-spacing:.15em;margin-bottom:14px;text-transform:uppercase}
+        #creator .creator-card p{font-size:.8rem;color:var(--muted);line-height:1.9}
+
+        /* === Follow === */
+        #follow{text-align:center;padding-bottom:60px}
+        #follow .platform-links{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:20px}
+        #follow .platform-links a{padding:11px 24px;border:1px solid var(--white08);border-radius:2px;color:var(--muted);text-decoration:none;font-size:.72rem;letter-spacing:.1em;transition:all .3s}
+        #follow .platform-links a:hover{border-color:var(--gold-border);color:var(--gold)}
+
+        footer{text-align:center;padding:36px;border-top:1px solid var(--white08)}
+        footer p{font-size:.68rem;color:var(--muted);letter-spacing:.1em}
+
+        /* === 灯箱 === */
+        #media-lightbox{position:fixed;inset:0;background:rgba(5,5,8,.97);z-index:10000;display:flex;justify-content:center;align-items:center;opacity:0;pointer-events:none;transition:opacity .4s}
+        #media-lightbox.active{opacity:1;pointer-events:auto}
+        .lb-container{width:88%;max-width:1100px;position:relative;display:flex;justify-content:center;align-items:center}
+        #lb-img{max-width:100%;max-height:82vh;object-fit:contain;border-radius:2px;box-shadow:0 20px 80px rgba(0,0,0,.8)}
+        #lb-video{max-width:100%;max-height:82vh;display:none;border-radius:2px;box-shadow:0 20px 80px rgba(0,0,0,.8)}
+        .lb-close{position:absolute;top:-38px;right:0;color:var(--muted);font-size:.75rem;letter-spacing:.2em;cursor:pointer;text-transform:uppercase;z-index:10;transition:color .3s}
+        .lb-close:hover{color:#fff}
+        .lb-nav{position:absolute;top:50%;transform:translateY(-50%);background:var(--white05);border:1px solid var(--white08);color:#fff;width:44px;height:44px;display:flex;justify-content:center;align-items:center;cursor:pointer;font-size:1.1rem;z-index:10;transition:all .3s}
+        .lb-nav:hover{background:rgba(255,255,255,.1)}
+        .lb-prev{left:-54px}.lb-next{right:-54px}
+        .lb-counter{position:absolute;bottom:-32px;left:50%;transform:translateX(-50%);color:var(--muted);font-size:.7rem;letter-spacing:.2em}
+
+        /* === 响应式 === */
+        @media(max-width:900px){
+            section{padding:70px 20px}
+            #hero .hero-name{font-size:2.4rem;letter-spacing:.18em}
+            #gallery .masonry{column-count:2;column-gap:10px}
+            .lb-nav{width:36px;height:36px}.lb-prev{left:8px}.lb-next{right:8px}
+            nav{padding:12px 20px}nav .nav-links{gap:12px}
+        }
+        @media(max-width:540px){
+            #gallery .masonry{column-count:1}
+            #hero .hero-name{font-size:1.8rem}
+            nav .nav-links{display:none}
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+    <!-- 入场 -->
+    <div id="intro-overlay">
+        <div class="logo-text">许安歌</div>
+        <button class="intro-btn" onclick="startExperience()">Enter</button>
+        <div class="intro-hint">都市夜色系情绪流行女歌手</div>
+    </div>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- 导航 -->
+    <nav id="navbar">
+        <span class="nav-brand">许安歌</span>
+        <div class="nav-links">
+            <a href="#promo-card">MV</a><a href="#about">关于</a><a href="#character">档案</a><a href="#visual">视觉</a><a href="#posters">海报</a><a href="#gallery">画廊</a><a href="#creator">创作者</a><a href="#follow">关注</a>
+        </div>
+    </nav>
+
+    <!-- ===== Hero ===== -->
+    <section id="hero">
+        <h1 class="hero-name">许安歌</h1>
+        <p class="hero-sub">都市夜色系情绪流行女歌手</p>
+        <p class="hero-line">她把那些没说出口的话，轻轻唱给夜色。</p>
+        <div class="hero-btns">
+            <a href="#mv1" class="btn-primary">观看首支 MV</a>
+            <a href="#about" class="btn-ghost">了解许安歌</a>
+            <a href="#gallery" class="btn-ghost">查看视觉设定</a>
+        </div>
+    </section>
+
+    <!-- ===== 长IP 宣传卡（显眼大位） ===== -->
+    <section id="promo-card">
+        <div class="section-tag">首支单曲 · 宣传卡</div>
+        <h2 class="section-title">《后来风吹过》</h2>
+        <div class="promo-wrapper">
+            <img src="./assets/images/长IP.png" alt="后来风吹过 宣传卡" loading="lazy">
+            <div class="promo-label">OFFICIAL PROMO CARD</div>
+        </div>
+    </section>
+
+    <!-- ===== MV 1: 后来风吹过 ===== -->
+    <section id="mv1">
+        <div class="section-tag">Music Video · 01</div>
+        <h2 class="section-title">首支单曲《后来风吹过》</h2>
+
+        <div class="mv-player">
+            <video src="./assets/videos/F01.mp4" controls playsinline poster=""></video>
+        </div>
+
+        <div class="mv-info">
+            <p class="mv-desc">一支关于旧街、夜雨、玻璃倒影和未说出口名字的情绪流行 MV。不是遗忘，不是崩溃，而是在很久以后，终于能把没说完的话轻轻说完。</p>
+            <div class="lyric-quote">
+                后来风经过<br>旧街还替你亮着<br><br>那些没说完的难过<br>慢慢变成夜里的歌<br><br>从此你的名字<br>不再替我把灯点燃
+            </div>
+        </div>
+
+        <div class="mv-story">
+            <h4>MV 故事</h4>
+            <p>采用"故事线 + 演唱线 + 情绪独舞线"的结构。从雨夜旧街开始，许安歌独自走过曾经熟悉的路口，站在玻璃前看见自己的倒影。她没有回头，也没有大声哭泣，只是让那些没说完的话，被夜风一点一点带出来。</p>
+            <p>在情绪小高潮处，她唱出："从此你的名字，不再替我把灯点燃。"最后关掉陪伴整夜的台灯，走向更亮的晨光。这不是彻底忘记，而是终于不再依赖回忆照亮自己。</p>
+        </div>
+    </section>
+
+    <!-- ===== MV 2: Delete My Longing / 请删除我的想念 ===== -->
+    <section id="mv2">
+        <div class="section-tag">Music Video · 02</div>
+        <h2 class="section-title">Delete My Longing</h2>
+        <p class="mv-info mv-subtitle" style="text-align:center;font-size:.9rem;margin-bottom:24px;">《请删除我的想念》&nbsp;·&nbsp;The 9000th Wake-Up&nbsp;·&nbsp;第9000次唤醒</p>
+
+        <div class="mv-player">
+            <video src="./assets/videos/MV.2.2.mp4" controls playsinline poster=""></video>
+        </div>
+
+        <div class="mv-info">
+            <p class="mv-desc">《Delete My Longing》是许安歌机器人概念单曲项目中的科幻情绪流行作品。这首歌原本讨论的是"删除想念"——在一个情感可以被系统处理、记忆可以被清理的未来，人类仍然无法真正删除那些曾经存在过的情感痕迹。MV 副标题 The 9000th Wake-Up 将歌曲的情绪转化为一个机器人寓言故事。</p>
+        </div>
+
+        <div class="mv-story">
+            <h4>Story · The 9000th Wake-Up</h4>
+            <div class="story-block">
+                <p>未来世界，人类消失，自动住宅系统仍在运行。</p>
+                <p>每天清晨，系统准时启动。早餐被送到空椅子前，休眠舱被一次次打开，服务机器人 B07 记录着无人回应的晨间流程。第8999次未唤醒之后，系统依然判定：流程正常。</p>
+                <p>但 B07 的真正任务并不在地面。它悄悄利用晨间系统残余的冷凝水、光照和能源，供给地下生命库里最后一株绿色幼苗。这株植物微弱、脆弱，却证明地球还没有彻底死亡。</p>
+                <p>当飞行清除机器人锁定这道"未登记生命体"信号后，B07 被迫进入守护。它用身体抵挡扫描与攻击，用受损的机体保护那一点绿色。最终，它切断空住宅供能，将系统原本服务空房间的能源转向生命库。</p>
+                <p>清除系统无法归类这道生命反应，暂时停止执行。B07 抱起透明生命舱，带着幼苗走向灰蓝色的废土黎明。</p>
+                <p>第9000次唤醒失败了。<br>但真正的唤醒，也许才刚刚开始。</p>
+            </div>
+            <div class="mv-keywords">
+                <span>机器人 B07</span><span>第9000次唤醒</span><span>地下生命库</span><span>绿色幼苗</span><span>清除系统</span><span>废土黎明</span><span>科幻情绪流行</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== 精选海报 ===== -->
+    <section id="posters">
+        <div class="section-tag">Featured Posters</div>
+        <h2 class="section-title">精选海报</h2>
+        <div class="poster-row">
+            <div class="poster-item" onclick="openLightboxByName('./assets/images/海报.png')"><img src="./assets/images/海报.png" alt="海报" loading="lazy"></div>
+            <div class="poster-item" onclick="openLightboxByName('./assets/images/海报2.png')"><img src="./assets/images/海报2.png" alt="海报2" loading="lazy"></div>
+            <div class="poster-item" onclick="openLightboxByName('./assets/images/海报3.png')"><img src="./assets/images/海报3.png" alt="海报3" loading="lazy"></div>
+            <div class="poster-item" onclick="openLightboxByName('./assets/images/海报4.png')"><img src="./assets/images/海报4.png" alt="海报4" loading="lazy"></div>
+            <div class="poster-item" onclick="openLightboxByName('./assets/images/海报5.png')"><img src="./assets/images/海报5.png" alt="海报5" loading="lazy"></div>
+        </div>
+    </section>
+
+    <!-- ===== About ===== -->
+    <section id="about">
+        <div class="about-text">
+            <div class="section-tag">About</div>
+            <h2 class="section-title">关于许安歌</h2>
+            <div class="section-body">
+                <p>许安歌，是一位诞生于 AI 音乐与 AI 影像创作体系中的都市夜色系虚拟女歌手。她不是传统意义上的偶像，也不是单纯的虚拟角色。她更像一位存在于城市夜晚里的歌者：安静、清冷、克制，带着一点孤独感，也带着一点不愿打扰世界的温柔。</p>
+                <p>她的音乐聚焦现代中文情绪流行，擅长表达那些没有被说出口的告别、旧街里的回忆、夜风中的迟疑，以及黎明前终于松开的心事。她的歌，不是为了制造喧闹，而是为了让那些细小、隐秘、真实的情绪，有一个可以被听见的出口。</p>
+            </div>
+        </div>
+        <div class="about-card">
+            <div class="stat"><div class="stat-label">姓名</div><div class="stat-value">许安歌 / Xu Ange</div></div>
+            <div class="stat"><div class="stat-label">身份</div><div class="stat-value">都市夜色系情绪流行女歌手</div></div>
+            <div class="stat"><div class="stat-label">年龄感</div><div class="stat-value">22–25 岁</div></div>
+            <div class="stat"><div class="stat-label">音乐类型</div><div class="stat-value">现代中文情绪流行</div></div>
+            <div class="stat"><div class="stat-label">代表单曲</div><div class="stat-value">《后来风吹过》<br>《请删除我的想念》</div></div>
+        </div>
+    </section>
+
+    <!-- ===== 人物档案 ===== -->
+    <section id="character">
+        <div class="section-tag">Profile</div>
+        <h2 class="section-title">人物档案</h2>
+        <div class="profile-grid">
+            <div class="profile-card">
+                <h4>人物气质</h4>
+                <p>内收、克制、温柔而有距离感。很少用强烈的表情表达情绪，更常在眼神、呼吸、停顿和一段轻声演唱里，让听众感受到那些被压住的心事。</p>
+            </div>
+            <div class="profile-card">
+                <h4>外貌设定</h4>
+                <ul>
+                    <li>黑色长发，自然披散，发尾带轻微弧度</li>
+                    <li>冷白真实肤色，淡妆，自然豆沙色唇</li>
+                    <li>眼神干净、安静、略带故事感</li>
+                </ul>
+            </div>
+            <div class="profile-card">
+                <h4>服装设定</h4>
+                <ul>
+                    <li><strong>主视觉：</strong>浅米色长款风衣 + 黑色内搭</li>
+                    <li><strong>室内造型：</strong>黑色衬衫 / 极简室内服</li>
+                    <li><strong>Live 造型：</strong>黑色极简长裙 / 演唱服</li>
+                </ul>
+                <p style="margin-top:10px">浅米色风衣 → 行走在夜色与城市之间；黑色室内服 → 独处与回忆；黑色演唱服 → 歌手的正式表达。</p>
+            </div>
+            <div class="profile-card">
+                <h4>关键词</h4>
+                <div class="mood-grid">
+                    <span class="mood-tag">温柔</span><span class="mood-tag">清冷</span><span class="mood-tag">克制</span><span class="mood-tag">夜色</span><span class="mood-tag">风</span><span class="mood-tag">旧街</span><span class="mood-tag">玻璃</span><span class="mood-tag">倒影</span><span class="mood-tag">台灯</span><span class="mood-tag">旧照片</span><span class="mood-tag">未说出口</span><span class="mood-tag">黎明释怀</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== 视觉世界 ===== -->
+    <section id="visual">
+        <div class="section-tag">Visual World</div>
+        <h2 class="section-title">许安歌的视觉世界</h2>
+        <div class="section-body">
+            <p>建立在低饱和都市夜色电影感之上。没有强烈的舞台灯光，也没有明亮喧闹的偶像场景。画面更接近一部安静的城市情绪电影。她不是被聚光灯包围的人，而是站在城市边缘、在夜色里轻轻唱歌的人。</p>
+        </div>
+        <div style="margin-top:24px">
+            <div class="section-tag" style="margin-bottom:12px">视觉母题</div>
+            <div class="mood-grid">
+                <span class="mood-tag">雨夜旧街</span><span class="mood-tag">暖黄色路灯</span><span class="mood-tag">湿润路面反光</span><span class="mood-tag">玻璃倒影</span><span class="mood-tag">城市窗边</span><span class="mood-tag">旧照片</span><span class="mood-tag">台灯</span><span class="mood-tag">黑色长发</span><span class="mood-tag">浅米色风衣</span><span class="mood-tag">深蓝夜色</span><span class="mood-tag">黎明微光</span>
+            </div>
+        </div>
+        <div class="tone-standards">
+            <div class="section-tag" style="margin-bottom:10px">影调标准</div>
+            <p>低饱和 · 深蓝暗部 · 暖黄色局部光源 · 真实皮肤质感 · 浅景深 · 轻胶片颗粒 · 高光不过曝 · 暗部不死黑 · 冷暖对比克制 · 整体安静、高级、疏离</p>
+        </div>
+    </section>
+
+    <!-- ===== 画廊瀑布流 ===== -->
+    <section id="gallery">
+        <div class="section-tag">Gallery</div>
+        <h2 class="section-title">视觉画廊</h2>
+        <div class="masonry" id="masonry-grid"></div>
+    </section>
+
+    <!-- ===== Creator ===== -->
+    <section id="creator">
+        <div class="section-tag">Creator</div>
+        <h2 class="section-title">关于创作者</h2>
+        <div class="creator-card">
+            <h3>ZHIQING LU</h3>
+            <div class="role">AI 影像创作者 · 虚拟歌手策划者 · 视觉导演</div>
+            <p>创作方向聚焦 AI 音乐、AI MV、虚拟角色 IP、电影感影像生成与可持续内容体系搭建。在许安歌项目中负责整体概念策划、歌曲方向、歌词与情绪结构、角色设定、视觉风格、分镜设计、AI 影像生成流程、后期剪辑与发布体系规划。</p>
+            <p style="margin-top:16px"><strong style="color:var(--gold)">夜帧影像 Nightframe Studio</strong><br>围绕 AI 影像、虚拟歌手与音乐视觉内容建立的创作厂牌，关注如何通过 AI 建立可持续的角色、作品和视觉世界。</p>
+        </div>
+        <p style="margin-top:28px;font-size:.75rem;color:var(--muted)">《后来风吹过》&nbsp;·&nbsp;《请删除我的想念》&nbsp;·&nbsp;演唱：许安歌&nbsp;·&nbsp;词曲策划：ZHIQING LU&nbsp;·&nbsp;视觉导演：ZHIQING LU&nbsp;·&nbsp;AI 影像制作：夜帧影像 Nightframe Studio</p>
+    </section>
+
+    <!-- ===== Follow ===== -->
+    <section id="follow">
+        <div class="section-tag">Follow</div>
+        <h2 class="section-title">关注许安歌</h2>
+        <div class="platform-links">
+            <a href="#">抖音</a><a href="#">小红书</a><a href="#">B站</a><a href="#">视频号</a><a href="#">YouTube</a><a href="#">网易云音乐</a><a href="#">QQ音乐</a>
+        </div>
+    </section>
+
+    <footer><p>许安歌 © 2026 · 夜帧影像 Nightframe Studio · dxshouxi@gmail.com</p></footer>
+
+    <!-- 灯箱 -->
+    <div id="media-lightbox">
+        <div class="lb-container">
+            <div class="lb-close" onclick="closeLightbox()">[ CLOSE ]</div>
+            <div class="lb-nav lb-prev" onclick="navLightbox(-1)">&#10094;</div>
+            <img id="lb-img" src="" alt="">
+            <video id="lb-video" controls playsinline></video>
+            <div class="lb-nav lb-next" onclick="navLightbox(1)">&#10095;</div>
+            <div class="lb-counter" id="lb-counter"></div>
+        </div>
+    </div>
+
+    <script>
+        /* =====================================================================
+         *  全部媒体资产
+         * ===================================================================== */
+        const ALL_MEDIA = [
+            { src: "./assets/images/0da6bff8-5d62-4ee7-b2c7-e3e1acc9ce0a.png", type: "image" },
+            { src: "./assets/images/0e99fea0-1bb6-4401-aef5-ce1d8c9657b6.png", type: "image" },
+            { src: "./assets/images/100da0d2-deb7-4313-817c-60584892e364.png", type: "image" },
+            { src: "./assets/images/159342ff-58a7-4592-8b9b-0219ea323926.png", type: "image" },
+            { src: "./assets/images/18619569-0458-43eb-ba48-b1f3e01aa06e.png", type: "image" },
+            { src: "./assets/images/22d2ecf5-2e9a-4231-91c9-cd91ca62d84b.png", type: "image" },
+            { src: "./assets/images/22e67d5f-d0ae-4346-b7a2-4e6368f314c5.png", type: "image" },
+            { src: "./assets/images/368050f9-46b8-4b72-a55b-a24bec6c2c96.png", type: "image" },
+            { src: "./assets/images/39b37bb9-1e26-4605-8582-0bfb2dd56799.png", type: "image" },
+            { src: "./assets/images/3bab1871-2009-470a-98c5-3d1c0e7e9252.png", type: "image" },
+            { src: "./assets/images/3c9da2ad-f1f8-4fed-82b4-75e2eec52e09.png", type: "image" },
+            { src: "./assets/images/3cd02fa9-0879-471c-b39c-544e918af211.png", type: "image" },
+            { src: "./assets/images/3d0a3f94-2c7d-4206-be76-bbf6128a27c8.png", type: "image" },
+            { src: "./assets/images/3d3a5231-d4d2-42bd-9dfb-2e74abe52b7c.png", type: "image" },
+            { src: "./assets/images/40d244ff-1489-42d0-a11a-4a96c0f2f517.png", type: "image" },
+            { src: "./assets/images/50865dd4-4bbe-4237-838c-e34c0e8e7864.png", type: "image" },
+            { src: "./assets/images/51be3ab1-5563-4532-b051-ddab386f5013.png", type: "image" },
+            { src: "./assets/images/658a76ac-63ce-4b48-b94b-ef2b619aeaa1.png", type: "image" },
+            { src: "./assets/images/6b9c5963-f1df-4db2-b794-9a03128a651c.png", type: "image" },
+            { src: "./assets/images/6bd52670-1a53-4e5a-891d-f9a00c1b39c6.png", type: "image" },
+            { src: "./assets/images/6e3bca36-4fd7-45d8-b8cd-57d77f76f51a.png", type: "image" },
+            { src: "./assets/images/84c815c0-b5b2-4ac5-973e-9748ba03bcd4.png", type: "image" },
+            { src: "./assets/images/87380ec9-90cf-4bdb-96ef-db90cc3a97db.png", type: "image" },
+            { src: "./assets/images/89145702-6c22-4486-8f0a-3561ee1abca4.png", type: "image" },
+            { src: "./assets/images/8a6852e9-8a53-4a19-a53b-fdc8a926a226.png", type: "image" },
+            { src: "./assets/images/92b694dd-7823-4d12-a2a7-064b0e50c291.png", type: "image" },
+            { src: "./assets/images/964151e6-e2e9-476c-a87d-931e852ffdc7.png", type: "image" },
+            { src: "./assets/images/96efff8b-d2f0-43b2-ae8b-74723ce2d4e0.png", type: "image" },
+            { src: "./assets/images/9ee78ba1-c476-46eb-b169-7c3a5227f70c.png", type: "image" },
+            { src: "./assets/images/a5037483-0ada-4222-8179-d672287ffd0f.png", type: "image" },
+            { src: "./assets/images/a66e75c9-cc4c-45e6-8251-3201a95ed13d.png", type: "image" },
+            { src: "./assets/images/a9c538ab-e25f-4ab6-87ba-33823c9b0f8d.png", type: "image" },
+            { src: "./assets/images/b02431ee-af51-4578-abf1-7939bf9e2d97.png", type: "image" },
+            { src: "./assets/images/b70070d1-865a-4fa0-b1e0-7779fd9ca5fb.png", type: "image" },
+            { src: "./assets/images/bdad45f5-9b3c-4b00-9da3-9ed347016021.png", type: "image" },
+            { src: "./assets/images/c0e7c4b9-f943-4701-9bba-d5b6563680b9.png", type: "image" },
+            { src: "./assets/images/c293b1e2-24a8-4f53-926e-90a7104aeb5f.png", type: "image" },
+            { src: "./assets/images/c57a1ce9-5296-4cb4-a0df-63c2d0e04569.png", type: "image" },
+            { src: "./assets/images/c64269c4-407e-467b-b5e0-da9134ec3487.png", type: "image" },
+            { src: "./assets/images/c96c6c96-290f-49db-a62f-0bb71419af47.png", type: "image" },
+            { src: "./assets/images/c9a0100e-99c2-4766-bc97-fb31b39cc0fe.png", type: "image" },
+            { src: "./assets/images/cbfaf5b0-3756-4b72-b79a-7b9ad0d7719d.png", type: "image" },
+            { src: "./assets/images/cec91a38-7d06-44f9-8d43-69142134a93c.png", type: "image" },
+            { src: "./assets/images/d88674e2-1e64-4060-8135-9e8616fe5eb2.png", type: "image" },
+            { src: "./assets/images/dcf23887-e24c-4b83-a87e-07e25bb470d9.png", type: "image" },
+            { src: "./assets/images/de481c62-ed83-4816-b1a0-918b0b853df3.png", type: "image" },
+            { src: "./assets/images/e8b8bcfb-28f4-40df-b1d1-c9873aced018.png", type: "image" },
+            { src: "./assets/images/ecc3c904-6653-4afa-9638-dc57c7deafca.png", type: "image" },
+            { src: "./assets/images/f256f9d9-d381-44fe-a13c-1f9b649b6785.png", type: "image" },
+            { src: "./assets/images/f2a5b6da-1269-47df-b9e1-159bc6aef271.png", type: "image" },
+            { src: "./assets/images/f6c932f6-d970-4fa8-9e2f-48de66e8ccde.png", type: "image" },
+            { src: "./assets/images/fbcb534a-aab2-4e00-acb0-3b5b4c9159b7.png", type: "image" },
+            { src: "./assets/images/Gemini_Generated_Image_kd4ebekd4ebekd4e.png", type: "image" },
+            { src: "./assets/images/Gemini_Generated_Image_o4kam2o4kam2o4ka.png", type: "image" },
+            { src: "./assets/images/单身像.png", type: "image" },
+            { src: "./assets/images/海报.png", type: "image" },
+            { src: "./assets/images/海报2.png", type: "image" },
+            { src: "./assets/images/海报3.png", type: "image" },
+            { src: "./assets/images/海报4.png", type: "image" },
+            { src: "./assets/images/海报5.png", type: "image" },
+            { src: "./assets/images/全身.png", type: "image" },
+            { src: "./assets/images/许安歌｜角色设定卡 V1-4K.png", type: "image" },
+            { src: "./assets/images/许安歌｜角色设定卡 V2.png", type: "image" },
+            { src: "./assets/images/长IP.png", type: "image" },
+            { src: "./assets/videos/F01.mp4", type: "video" },
+            { src: "./assets/videos/MV.2.2.mp4", type: "video" },
+        ];
+
+        // 已在其他区域展示的文件，不再重复出现在画廊
+        const FEATURED = new Set([
+            "./assets/images/长IP.png",
+            "./assets/images/海报.png","./assets/images/海报2.png","./assets/images/海报3.png","./assets/images/海报4.png","./assets/images/海报5.png",
+        ]);
+
+        /* =====================================================================
+         *  渲染瀑布流画廊（过滤已展示内容）
+         * ===================================================================== */
+        (function renderGallery(){
+            const grid=document.getElementById('masonry-grid');
+            ALL_MEDIA.forEach((item,i)=>{
+                if(item.type!=='image') return;
+                if(FEATURED.has(item.src)) return;
+                const card=document.createElement('div');
+                card.className='masonry-item';
+                card.onclick=()=>openLightbox(i);
+                card.innerHTML=`<img src="${item.src}" alt="" loading="lazy">`;
+                grid.appendChild(card);
+            });
+        })();
+
+        /* =====================================================================
+         *  Web Audio
+         * ===================================================================== */
+        let audioCtx=null;
+        function initAudio(){
+            audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+            const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+            o.type='sine';o.frequency.setValueAtTime(42,audioCtx.currentTime);
+            g.gain.setValueAtTime(.08,audioCtx.currentTime);
+            o.connect(g);g.connect(audioCtx.destination);o.start();
+        }
+        function clickSound(){
+            if(!audioCtx)return;
+            const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+            o.type='triangle';o.frequency.setValueAtTime(900,audioCtx.currentTime);
+            o.frequency.exponentialRampToValueAtTime(1400,audioCtx.currentTime+.04);
+            g.gain.setValueAtTime(.02,audioCtx.currentTime);
+            g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.04);
+            o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+.04);
+        }
+        function boomSound(){
+            if(!audioCtx)return;
+            const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+            o.type='sine';o.frequency.setValueAtTime(70,audioCtx.currentTime);
+            o.frequency.exponentialRampToValueAtTime(22,audioCtx.currentTime+1);
+            g.gain.setValueAtTime(.28,audioCtx.currentTime);
+            g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+1);
+            o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+1);
+        }
+        function startExperience(){
+            document.getElementById('intro-overlay').style.opacity='0';
+            setTimeout(()=>document.getElementById('intro-overlay').style.display='none',1000);
+            document.getElementById('navbar').classList.add('visible');
+            initAudio();boomSound();initWebGL();
+        }
+        document.querySelectorAll('a,button,.masonry-item,.mood-tag,.poster-item').forEach(el=>{el.addEventListener('mouseenter',clickSound)});
+
+        /* =====================================================================
+         *  Three.js 3D
+         * ===================================================================== */
+        let group,core;
+        function initWebGL(){
+            const canvas=document.getElementById('bg-canvas');
+            const scene=new THREE.Scene();
+            const camera=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,.1,100);camera.position.z=5;
+            const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+            renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+            group=new THREE.Group();scene.add(group);
+            const geo=new THREE.TorusKnotGeometry(.7,.22,128,12);
+            const mat=new THREE.MeshStandardMaterial({color:0x1a1a20,metalness:.9,roughness:.15});
+            core=new THREE.Mesh(geo,mat);group.add(core);
+            const pGeo=new THREE.BufferGeometry();
+            const arr=new Float32Array(400*3);for(let i=0;i<400*3;i++)arr[i]=(Math.random()-.5)*5;
+            pGeo.setAttribute('position',new THREE.BufferAttribute(arr,3));
+            const pts=new THREE.Points(pGeo,new THREE.PointsMaterial({size:.02,color:0xc8a878,transparent:true,opacity:.25}));
+            group.add(pts);
+            scene.add(new THREE.AmbientLight(0xffffff,.06));
+            const spot=new THREE.SpotLight(0xc8a878,3);spot.position.set(2,4,3);spot.angle=Math.PI/5;spot.penumbra=.9;scene.add(spot);
+            let mx=0,my=0,cx=0,cy=0;
+            window.addEventListener('mousemove',e=>{mx=(e.clientX/innerWidth-.5)*.3;my=(e.clientY/innerHeight-.5)*.3});
+            window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+            (function anim(){requestAnimationFrame(anim);core.rotation.y+=.002;pts.rotation.y-=.0008;cx+=(mx-cx)*.05;cy+=(my-cy)*.05;group.rotation.y=cx;group.rotation.x=cy;renderer.render(scene,camera)})();
+        }
+
+        /* =====================================================================
+         *  灯箱
+         * ===================================================================== */
+        const lb=document.getElementById('media-lightbox'),lbImg=document.getElementById('lb-img'),lbVid=document.getElementById('lb-video'),lbCount=document.getElementById('lb-counter');
+        let cur=0;
+        function isVid(s){return /\.(mp4|webm|mov)$/i.test(s)}
+        function openLightbox(i){cur=i;show();lb.classList.add('active');boomSound()}
+        function openLightboxByName(name){const idx=ALL_MEDIA.findIndex(m=>m.src===name);if(idx>=0)openLightbox(idx)}
+        function show(){
+            const m=ALL_MEDIA[cur];
+            if(isVid(m.src)){lbImg.style.display='none';lbVid.src=m.src;lbVid.style.display='block'}
+            else{lbVid.style.display='none';lbVid.src='';lbImg.src=m.src;lbImg.style.display='block'}
+            lbCount.innerText=(cur+1)+' / '+ALL_MEDIA.length
+        }
+        function navLightbox(d){cur=(cur+d+ALL_MEDIA.length)%ALL_MEDIA.length;show();clickSound()}
+        function closeLightbox(){lb.classList.remove('active');lbVid.pause();clickSound();setTimeout(()=>{lbImg.src='';lbVid.src=''},400)}
+        document.addEventListener('keydown',e=>{if(!lb.classList.contains('active'))return;if(e.key==='Escape')closeLightbox();if(e.key==='ArrowLeft')navLightbox(-1);if(e.key==='ArrowRight')navLightbox(1)})
+        lb.addEventListener('click',e=>{if(e.target===lb)closeLightbox()})
+    </script>
+</body>
+</html>
